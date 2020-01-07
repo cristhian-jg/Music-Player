@@ -51,30 +51,27 @@ public class MainActivity extends AppCompatActivity implements IMusicaListener{
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        musicas[0] = new Musica(
-                "Lil Nas X - Old Town Road (feat. Billy Ray Cyrus) [Remix]",
-                R.drawable.caratula1,
-                R.raw.cancion1
-        );
+        /**
+         * Se rellena el array con las tres
+         * canciones que habrán en la aplicación.
+         */
+        updateMusica();
 
-        musicas[1] = new Musica(
-                "Post Malone, Swae Lee - Sunflower (Spider-Man Into the Spider-Verse)",
-                R.drawable.caratula2,
-                R.raw.cancion2
-        );
-
-        musicas[2] = new Musica(
-                "지코 (ZICO) - BERMUDA TRIANGLE (Feat. Crush, DEAN)",
-                R.drawable.caratula3,
-                R.raw.cancion3
-        );
-
+        /**
+         * Se hace referencia al RecyclerView para así poder rellenarlo con
+         * las músicas mediante el adaptador, al cual se le pasa el array
+         * y el escuchador (la propia clase que implementa IMusicaListener)
+         */
         recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
-
         recyclerView.setHasFixedSize(true);
         recyclerView.setAdapter(new MusicaAdapter(musicas, this));
         recyclerView.setLayoutManager(new LinearLayoutManager(getBaseContext()));
 
+        /**
+         * Se hace referencia a la SeekBar y mediante la clase Executors
+         * creo un nuevo hilo de ejecución que irá actualizando el progreso de la seekbar
+         * cada 200 milisegundos gracias al manejador.
+         */
         seekBar = (SeekBar) findViewById(R.id.seekBar);
         ScheduledExecutorService executors = Executors.newSingleThreadScheduledExecutor();
         executors.scheduleAtFixedRate(new Runnable() {
@@ -87,7 +84,19 @@ public class MainActivity extends AppCompatActivity implements IMusicaListener{
             }
         }, 0, 1000, TimeUnit.MILLISECONDS);
 
+        /**
+         * Setteo un nuevo escuchador a la SeekBar para que al cambiar de posición la SeekBar
+         * esta haga un cambio tambien en la música.
+         */
         seekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+
+            /**
+             * Se ejecuta al cambiar el progreso del SeekBar, este se encarga de
+             * cambiar la posición de la música mediante un metodo en el servicio .seekToPosition();
+             * @param seekBar
+             * @param progress
+             * @param fromUser
+             */
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 if (fromUser){
@@ -96,6 +105,11 @@ public class MainActivity extends AppCompatActivity implements IMusicaListener{
 
             }
 
+            /**
+             * Se ejecuta al tocar la SeekBar y al cambia de posición respecto a
+             * la posición de la música gracias al metodo del servicio .getCurrentPosition()
+             * @param seekBar
+             */
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
                 seekBar.setProgress(mService.getCurrentPosition());
@@ -123,13 +137,13 @@ public class MainActivity extends AppCompatActivity implements IMusicaListener{
                     isPlaying = true;
 
                     if (enlazado) {
-                        mService.start(0);
+                        mService.resume();
                         seekBar.setMax(mService.getDuration());
                         seekBar.setProgress(mService.getCurrentPosition());
                     }
 
                 } else {
-                    btnPlayPause.setImageResource(R.drawable.jugar);
+                    btnPlayPause.setImageResource(R.drawable.play);
                     if (enlazado) {
                         mService.pause();
                         seekBar.setProgress(mService.getCurrentPosition());
@@ -146,9 +160,7 @@ public class MainActivity extends AppCompatActivity implements IMusicaListener{
                 if (enlazado) {
                     if(mService.passNext()){
                         tvTitulo.setText(mService.getCurrentTitle());
-                        ivCaratula.setImageResource(mService.getCurrentCaratula());
-                        Bitmap caratulaRedondeada = redondear(ivCaratula);
-                        ivCaratula.setImageBitmap(caratulaRedondeada);
+                        changeCover();
                     }
                 }
             }
@@ -161,9 +173,7 @@ public class MainActivity extends AppCompatActivity implements IMusicaListener{
                 if (enlazado) {
                     if(mService.passBack()) {
                         tvTitulo.setText(mService.getCurrentTitle());
-                        ivCaratula.setImageResource(mService.getCurrentCaratula());
-                        Bitmap caratulaRedondeada = redondear(ivCaratula);
-                        ivCaratula.setImageBitmap(caratulaRedondeada);
+                        changeCover();
                     }
                 }
             }
@@ -183,13 +193,46 @@ public class MainActivity extends AppCompatActivity implements IMusicaListener{
     protected void onStop() {
         super.onStop();
         unbindService(connection);
-        enlazado = false;
     }
 
+    /**
+     * Metodo que transforma la imagen en un Bitmap con bordes redondeados.
+     * @param imageView
+     * @return
+     */
     public Bitmap redondear(ImageView imageView) {
         BitmapDrawable bitmapDrawable = (BitmapDrawable) imageView.getDrawable();
         Bitmap bitmap = ImageHelper.getRoundedCornerBitmap(bitmapDrawable.getBitmap(), 25);
         return Bitmap.createScaledBitmap(bitmap, 850, 850, false);
+    }
+
+    public void changeCover() {
+        ivCaratula.setImageResource(mService.getCurrentCover());
+        Bitmap caratulaRedondeada = redondear(ivCaratula);
+        ivCaratula.setImageBitmap(caratulaRedondeada);
+    }
+
+    /**
+     * Metodo que rellena el array con las músicas.
+     */
+    public void updateMusica() {
+        musicas[0] = new Musica(
+                "Lil Nas X - Old Town Road (feat. Billy Ray Cyrus) [Remix]",
+                R.drawable.caratula1,
+                R.raw.cancion1
+        );
+
+        musicas[1] = new Musica(
+                "Post Malone, Swae Lee - Sunflower (Spider-Man Into the Spider-Verse)",
+                R.drawable.caratula2,
+                R.raw.cancion2
+        );
+
+        musicas[2] = new Musica(
+                "지코 (ZICO) - BERMUDA TRIANGLE (Feat. Crush, DEAN)",
+                R.drawable.caratula3,
+                R.raw.cancion3
+        );
     }
 
     private ServiceConnection connection = new ServiceConnection() {
@@ -215,11 +258,10 @@ public class MainActivity extends AppCompatActivity implements IMusicaListener{
         mService.stop();
         mService.start(position);
         tvTitulo.setText(mService.getCurrentTitle());
-        ivCaratula.setImageResource(mService.getCurrentCaratula());
-        Bitmap caratulaRedondeada = redondear(ivCaratula);
-        ivCaratula.setImageBitmap(caratulaRedondeada);
+        changeCover();
         seekBar.setMax(mService.getDuration());
         seekBar.setProgress(mService.getCurrentPosition());
+
         isPlaying = true;
     }
 }
