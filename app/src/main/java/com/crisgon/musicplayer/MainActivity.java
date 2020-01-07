@@ -92,7 +92,8 @@ public class MainActivity extends AppCompatActivity implements IMusicaListener{
 
             /**
              * Se ejecuta al cambiar el progreso del SeekBar, este se encarga de
-             * cambiar la posición de la música mediante un metodo en el servicio .seekToPosition();
+             * hacer los respectivos cambios como la posición de la música, la 'anchura'
+             * de la seekbar respecto a la duración de la canción y la reproduce en el punto deseado.
              * @param seekBar
              * @param progress
              * @param fromUser
@@ -102,6 +103,7 @@ public class MainActivity extends AppCompatActivity implements IMusicaListener{
                 if (fromUser){
                     mService.seekToPosition(progress);
                     seekBar.setProgress(progress);
+                    seekBar.setMax(mService.getDuration());
                     mService.resume();
                     btnPlayPause.setImageResource(R.drawable.pausa);
                     isPlaying = true;
@@ -109,19 +111,12 @@ public class MainActivity extends AppCompatActivity implements IMusicaListener{
 
             }
 
-            /**
-             * Se ejecuta al tocar la SeekBar y al cambia de posición respecto a
-             * la posición de la música gracias al metodo del servicio .getCurrentPosition()
-             * @param seekBar
-             */
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
-                //seekBar.setProgress(mService.getCurrentPosition());
             }
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                //seekBar.setProgress(mService.getCurrentPosition());
             }
         });
 
@@ -136,31 +131,49 @@ public class MainActivity extends AppCompatActivity implements IMusicaListener{
         tvTitulo = (TextView) findViewById(R.id.tvTitulo);
         tvTitulo.setSelected(true);
 
+
+        /**
+         * Se hace referencia al botón correcpondiente, se le asigna un
+         * listener para que al pulsarlo hace una cosa u otra.
+         */
         btnPlayPause = (ImageButton) findViewById(R.id.btnPlayStop);
         btnPlayPause.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                /**
+                 * Si al presionar el botón la música se está reproduciendo
+                 * pondrá la imagen de pausar y ejecutará el metodo del servicio resume() que
+                 * inicia o reanuda la música.
+                 */
                 if (!isPlaying) {
                     btnPlayPause.setImageResource(R.drawable.pausa);
                     isPlaying = true;
 
                     if (enlazado) {
                         mService.resume();
+                        seekBar.setProgress(mService.getCurrentPosition());
                         seekBar.setMax(mService.getDuration());
-                        //seekBar.setProgress(mService.getCurrentPosition());
                     }
 
+                    /**
+                     * Si al presionar el botón la música no se está reproduciendo
+                     * pondrá la imagen de reproducir y ejecutará el metodo del servicio pausa();
+                     */
                 } else {
                     btnPlayPause.setImageResource(R.drawable.play);
                     if (enlazado) {
                         mService.pause();
-                        //seekBar.setProgress(mService.getCurrentPosition());
                     }
                     isPlaying = false;
                 }
             }
         });
 
+        /**
+         * Se hace referencia al botón correspondiente y se le asigna
+         * un listener para que al pulsarlo pase a la siguiente canción mediante
+         * el metodo del servicio passNext(), y cambia la información de la música.
+         */
         btnNext = (ImageButton) findViewById(R.id.btnNext);
         btnNext.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -174,6 +187,11 @@ public class MainActivity extends AppCompatActivity implements IMusicaListener{
             }
         });
 
+        /**
+         * Se hace referencia al botón correspondiente y se le asigna
+         * un listener para que al pulsarlo pase a la anterior canción mediante
+         * el metodo del servicio passBack(), y cambia la información de la música.
+         */
         btnBack = (ImageButton) findViewById(R.id.btnBack);
         btnBack.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -188,10 +206,19 @@ public class MainActivity extends AppCompatActivity implements IMusicaListener{
         });
     }
 
+    /**
+     * Al ejecutarse el metodo onStart se crea el Intent para iniciar
+     * el servicio con startService() y iniciaremos el enlace con bindService()
+     * para poder usar los metodos del servicio.
+     */
     @Override
     protected void onStart() {
         super.onStart();
         Intent intent = new Intent(getBaseContext(), MusicaService.class);
+        /**
+         * Paso el Array de musica a traves de un
+         * putExtra, para luego leerlo en el servicio.
+         */
         intent.putExtra("miLista", musicas);
         startService(intent);
         bindService(intent, connection, Context.BIND_AUTO_CREATE);
@@ -214,6 +241,10 @@ public class MainActivity extends AppCompatActivity implements IMusicaListener{
         return Bitmap.createScaledBitmap(bitmap, 850, 850, false);
     }
 
+    /**
+     * Cambia la caratula por la correspondiente de cada canción y
+     * le añade bordes redondeados.
+     */
     public void changeCover() {
         ivCaratula.setImageResource(mService.getCurrentCover());
         Bitmap caratulaRedondeada = redondear(ivCaratula);
@@ -243,6 +274,10 @@ public class MainActivity extends AppCompatActivity implements IMusicaListener{
         );
     }
 
+    /**
+     * Me permite enlazar el servicio
+     * con la clase actual para así poder usar sus metodos.
+     */
     private ServiceConnection connection = new ServiceConnection() {
 
         @Override
@@ -259,6 +294,12 @@ public class MainActivity extends AppCompatActivity implements IMusicaListener{
         }
     };
 
+    /**
+     * Metodo que se ha de sobreescribir al hacer que esta clase implemente
+     * IMusicaListener, lo que permite que al pulsar en un item del RecyclerView
+     * haga las siguientes operaciones de reporducción.
+     * @param position
+     */
     @Override
     public void onSelectedMusica(int position) {
 
