@@ -101,6 +101,10 @@ public class MainActivity extends AppCompatActivity implements IMusicaListener{
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 if (fromUser){
                     mService.seekToPosition(progress);
+                    seekBar.setProgress(progress);
+                    mService.resume();
+                    btnPlayPause.setImageResource(R.drawable.pausa);
+                    isPlaying = true;
                 }
 
             }
@@ -112,15 +116,19 @@ public class MainActivity extends AppCompatActivity implements IMusicaListener{
              */
             @Override
             public void onStartTrackingTouch(SeekBar seekBar) {
-                seekBar.setProgress(mService.getCurrentPosition());
+                //seekBar.setProgress(mService.getCurrentPosition());
             }
 
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
-                seekBar.setProgress(mService.getCurrentPosition());
+                //seekBar.setProgress(mService.getCurrentPosition());
             }
         });
 
+        /**
+         * Se hace referencia al ImageView de la caratula y mediante un metodo
+         * la transformo en una
+         */
         ivCaratula = (ImageView) findViewById(R.id.ivCaratula);
         Bitmap caratulaRedondeada = redondear(ivCaratula);
         ivCaratula.setImageBitmap(caratulaRedondeada);
@@ -139,14 +147,14 @@ public class MainActivity extends AppCompatActivity implements IMusicaListener{
                     if (enlazado) {
                         mService.resume();
                         seekBar.setMax(mService.getDuration());
-                        seekBar.setProgress(mService.getCurrentPosition());
+                        //seekBar.setProgress(mService.getCurrentPosition());
                     }
 
                 } else {
                     btnPlayPause.setImageResource(R.drawable.play);
                     if (enlazado) {
                         mService.pause();
-                        seekBar.setProgress(mService.getCurrentPosition());
+                        //seekBar.setProgress(mService.getCurrentPosition());
                     }
                     isPlaying = false;
                 }
