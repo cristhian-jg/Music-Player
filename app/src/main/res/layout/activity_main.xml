@@ -16,7 +16,8 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/btnNext"
         app:layout_constraintStart_toEndOf="@+id/btnBack"
-        app:srcCompat="@drawable/jugar" />
+        app:layout_constraintTop_toBottomOf="@+id/seekBar"
+        app:srcCompat="@drawable/play" />
 
     <ImageButton
         android:id="@+id/btnBack"
@@ -28,6 +29,7 @@
         android:background="@color/transparent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/seekBar"
         app:srcCompat="@drawable/anterior" />
 
     <ImageButton
@@ -40,6 +42,7 @@
         android:background="@color/transparent"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/seekBar"
         app:srcCompat="@drawable/proximo" />
 
     <ImageView
@@ -49,14 +52,17 @@
         android:layout_marginStart="45dp"
         android:layout_marginLeft="45dp"
         android:layout_marginTop="15dp"
+        android:layout_marginEnd="45dp"
+        android:layout_marginRight="45dp"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:srcCompat="@drawable/caratula1" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerView"
-        android:layout_width="408dp"
-        android:layout_height="139dp"
+        android:layout_width="0dp"
+        android:layout_height="150dp"
         android:paddingLeft="30dp"
         android:paddingRight="30dp"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -84,6 +90,8 @@
         android:layout_marginStart="50dp"
         android:layout_marginLeft="50dp"
         android:layout_marginTop="20dp"
+        android:layout_marginEnd="50dp"
+        android:layout_marginRight="50dp"
         android:ellipsize="marquee"
         android:focusable="false"
         android:marqueeRepeatLimit="marquee_forever"
@@ -91,6 +99,7 @@
         android:text="Old Town Road (feat. Billy Ray Cyrus) [Remix]"
         android:textColor="@color/colorText"
         android:textSize="18sp"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/ivCaratula" />
 
