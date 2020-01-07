@@ -4,29 +4,41 @@ import java.io.Serializable;
 
 /**
  * Created by @cristhian-jg on 05/01/2020.
+ *
+ * Modelo que contiene la información básica de
+ * la música, así como su titulo, la ruta de la
+ * caratula y la del archivo.
  */
 public class Musica implements Serializable {
 
     private String titulo;
-    private Integer rutaCaratula;
-    private Integer rutaCancion;
+    private int caratula;
+    private int archivo;
 
-    public Musica(String titulo, Integer rutaCaratula, Integer ruta) {
+    public Musica(String titulo, int caratula, int archivo) {
         this.titulo = titulo;
-        this.rutaCancion = ruta;
-        this.rutaCaratula = rutaCaratula;
+        this.archivo = archivo;
+        this.caratula = caratula;
     }
 
     public String getTitulo() {
         return titulo;
     }
 
-    public Integer getRutaCaratula() {
-        return rutaCaratula;
+    public int getCaratula() {
+        return caratula;
     }
 
-    public Integer getRutaCancion() {
-        return rutaCancion;
+    public int getArchivo() {
+        return archivo;
     }
 
+    @Override
+    public String toString() {
+        return "Musica{" +
+                "titulo='" + titulo + '\'' +
+                ", caratula=" + caratula +
+                ", archivo=" + archivo +
+                '}';
+    }
 }
