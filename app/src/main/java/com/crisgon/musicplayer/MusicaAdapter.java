@@ -8,16 +8,19 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import java.util.ArrayList;
-
 /**
  * Created by @cristhian-jg on 05/01/2020.
+ *
+ * Adaptador de la lista de música que
+ * hay disponible en la aplicación, en la cual se puede
+ * seleccionar un elemento para cambiar de música.
  */
 public class MusicaAdapter extends RecyclerView.Adapter<MusicaAdapter.MusicaViewHolder> {
 
     private Musica[] musicas;
     private IMusicaListener listener;
-    private int selectedPos = 0;
+    private int position = 0;
+
     public MusicaAdapter(Musica[] musicas, IMusicaListener listener) {
         this.musicas = musicas;
         this.listener = listener;
@@ -28,8 +31,7 @@ public class MusicaAdapter extends RecyclerView.Adapter<MusicaAdapter.MusicaView
     public MusicaViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View itemView = LayoutInflater.from(parent.getContext()).
                 inflate(R.layout.itemlist_musica, parent, false);
-        MusicaViewHolder viewHolder = new MusicaViewHolder(itemView, listener);
-        return viewHolder;
+        return new MusicaViewHolder(itemView, listener);
     }
 
     @Override
@@ -44,9 +46,7 @@ public class MusicaAdapter extends RecyclerView.Adapter<MusicaAdapter.MusicaView
     }
 
 
-    public class MusicaViewHolder extends RecyclerView.ViewHolder implements View
-
-            .OnClickListener{
+    public class MusicaViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
 
         private TextView tvTitle;
         private IMusicaListener listener;
@@ -58,17 +58,13 @@ public class MusicaAdapter extends RecyclerView.Adapter<MusicaAdapter.MusicaView
             itemView.setOnClickListener(this);
         }
 
-        public void bindMusica(Musica musica){
+        public void bindMusica(Musica musica) {
             tvTitle.setText(musica.getTitulo());
         }
 
         @Override
         public void onClick(View v) {
-            notifyItemChanged(selectedPos);
-            selectedPos = getAdapterPosition();
-            notifyItemChanged(selectedPos);
             listener.onSelectedMusica(getAdapterPosition());
         }
     }
-
 }
