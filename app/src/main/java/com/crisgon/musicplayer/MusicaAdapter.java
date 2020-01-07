@@ -19,7 +19,6 @@ public class MusicaAdapter extends RecyclerView.Adapter<MusicaAdapter.MusicaView
 
     private Musica[] musicas;
     private IMusicaListener listener;
-    private int position = 0;
 
     public MusicaAdapter(Musica[] musicas, IMusicaListener listener) {
         this.musicas = musicas;
