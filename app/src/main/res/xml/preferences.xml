@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <PreferenceCategory android:title="Ajustes" />
+    <SwitchPreference
+        android:icon="@drawable/again"
+        android:key="sequence-preference"
+        android:summary="Se reproducirá la siguiente canción en la lista"
+        android:title="Sequencia" />
+    <SwitchPreference
+        android:icon="@drawable/repeat"
+        android:key="resume-preference"
+        android:summary="Se reanudará la canción donde se había quedado la ultima vez"
+        android:title="Reanudar"
+        />
+
+    <PreferenceCategory android:title="Personalización" />
+    <SwitchPreference
+        android:icon="@drawable/mode"
+        android:key="mode-preference"
+        android:title="Modo"
+        android:summary="Habilitar modo oscuro"/>
+
+</PreferenceScreen>
