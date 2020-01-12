@@ -1,6 +1,10 @@
 package com.crisgon.musicplayer;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.fragment.app.FragmentActivity;
+import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -8,16 +12,21 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
+
+import androidx.appcompat.widget.Toolbar;
 
 import com.crisgon.musicplayer.utils.ImageHelper;
 
@@ -25,11 +34,20 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-public class MainActivity extends AppCompatActivity implements IMusicaListener{
+public class MainActivity extends AppCompatActivity implements IMusicaListener {
+
+    private boolean PREFERENCE_NIGHT_MODE = true;
+    private boolean PREFERENCE_SEQUENCE_MODE = false;
+    private boolean PREFERENCE_REPEAT_MODE = false;
 
     private MusicaService mService;
     private boolean enlazado = false;
     private Handler handler = new Handler();
+
+    private Toolbar toolbar;
+
+    private ConstraintLayout constraintLayout;
+
 
     private Musica[] musicas = new Musica[3];
 
@@ -50,6 +68,13 @@ public class MainActivity extends AppCompatActivity implements IMusicaListener{
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        toolbar = findViewById(R.id.toolbar);
+
+        setSupportActionBar(toolbar);
+
+        constraintLayout = findViewById(R.id.constraintLayout);
+
 
         /**
          * Se rellena el array con las tres
@@ -77,7 +102,7 @@ public class MainActivity extends AppCompatActivity implements IMusicaListener{
         executors.scheduleAtFixedRate(new Runnable() {
             @Override
             public void run() {
-                if(mService != null){
+                if (mService != null) {
                     seekBar.setProgress(mService.getCurrentPosition());
                 }
                 handler.postDelayed(this, 200);
@@ -100,7 +125,7 @@ public class MainActivity extends AppCompatActivity implements IMusicaListener{
              */
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
-                if (fromUser){
+                if (fromUser) {
                     mService.seekToPosition(progress);
                     seekBar.setProgress(progress);
                     seekBar.setMax(mService.getDuration());
@@ -179,7 +204,7 @@ public class MainActivity extends AppCompatActivity implements IMusicaListener{
             @Override
             public void onClick(View v) {
                 if (enlazado) {
-                    if(mService.passNext()){
+                    if (mService.passNext()) {
                         tvTitulo.setText(mService.getCurrentTitle());
                         changeCover();
                     }
@@ -197,7 +222,7 @@ public class MainActivity extends AppCompatActivity implements IMusicaListener{
             @Override
             public void onClick(View v) {
                 if (enlazado) {
-                    if(mService.passBack()) {
+                    if (mService.passBack()) {
                         tvTitulo.setText(mService.getCurrentTitle());
                         changeCover();
                     }
@@ -227,11 +252,41 @@ public class MainActivity extends AppCompatActivity implements IMusicaListener{
     @Override
     protected void onStop() {
         super.onStop();
+
         unbindService(connection);
+
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putBoolean("mode-preference", PREFERENCE_NIGHT_MODE);
+        editor.putBoolean("sequence-preference", PREFERENCE_SEQUENCE_MODE);
+        editor.putBoolean("repeat-preference", PREFERENCE_REPEAT_MODE);
+        editor.apply();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+
+        PREFERENCE_NIGHT_MODE = preferences.getBoolean("sequence-preference", false);
+        PREFERENCE_REPEAT_MODE = preferences.getBoolean("repeat-preference", false);
+        PREFERENCE_SEQUENCE_MODE = preferences.getBoolean("mode-preference", true);
+
+        if (PREFERENCE_NIGHT_MODE) {
+            constraintLayout.setBackgroundColor(getResources().getColor(R.color.colorPrimaryDark));
+            toolbar.setBackgroundColor(getResources().getColor(R.color.colorPrimaryDark));
+
+        } else {
+            constraintLayout.setBackgroundColor(getResources().getColor(R.color.colorPrimaryLight));
+            toolbar.setBackgroundColor(getResources().getColor(R.color.colorPrimaryLight));
+        }
     }
 
     /**
      * Metodo que transforma la imagen en un Bitmap con bordes redondeados.
+     *
      * @param imageView
      * @return
      */
@@ -298,6 +353,7 @@ public class MainActivity extends AppCompatActivity implements IMusicaListener{
      * Metodo que se ha de sobreescribir al hacer que esta clase implemente
      * IMusicaListener, lo que permite que al pulsar en un item del RecyclerView
      * haga las siguientes operaciones de reporducción.
+     *
      * @param position
      */
     @Override
@@ -312,5 +368,22 @@ public class MainActivity extends AppCompatActivity implements IMusicaListener{
         seekBar.setProgress(mService.getCurrentPosition());
 
         isPlaying = true;
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()) {
+            case R.id.option_preferences:
+                startActivity(new Intent(MainActivity.this, PreferencesActivity.class));
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 }
