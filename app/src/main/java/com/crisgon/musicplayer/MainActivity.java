@@ -3,7 +3,6 @@ package com.crisgon.musicplayer;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.constraintlayout.widget.ConstraintLayout;
-import androidx.fragment.app.FragmentActivity;
 import androidx.preference.PreferenceManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -36,9 +35,9 @@ import java.util.concurrent.TimeUnit;
 
 public class MainActivity extends AppCompatActivity implements IMusicaListener {
 
-    private boolean PREFERENCE_NIGHT_MODE = true;
-    private boolean PREFERENCE_SEQUENCE_MODE = false;
-    private boolean PREFERENCE_REPEAT_MODE = false;
+    private boolean PREFERENCE_NIGHT_MODE;
+    private boolean PREFERENCE_SEQUENCE_MODE;
+    private boolean PREFERENCE_RESUME_MODE;
 
     private MusicaService mService;
     private boolean enlazado = false;
@@ -239,6 +238,7 @@ public class MainActivity extends AppCompatActivity implements IMusicaListener {
     @Override
     protected void onStart() {
         super.onStart();
+
         Intent intent = new Intent(getBaseContext(), MusicaService.class);
         /**
          * Paso el Array de musica a traves de un
@@ -247,20 +247,21 @@ public class MainActivity extends AppCompatActivity implements IMusicaListener {
         intent.putExtra("miLista", musicas);
         startService(intent);
         bindService(intent, connection, Context.BIND_AUTO_CREATE);
+
     }
 
     @Override
     protected void onStop() {
         super.onStop();
 
-        unbindService(connection);
-
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
 
         SharedPreferences.Editor editor = preferences.edit();
-        editor.putBoolean("mode-preference", PREFERENCE_NIGHT_MODE);
-        editor.putBoolean("sequence-preference", PREFERENCE_SEQUENCE_MODE);
-        editor.putBoolean("repeat-preference", PREFERENCE_REPEAT_MODE);
+        editor.putString("music-title", mService.getCurrentTitle());
+        editor.putInt("music-cover", mService.getCurrentCover());
+        editor.putInt("position", mService.getCurrentPosition());
+        editor.putInt("music-position", mService.getMusicPosition());
+        editor.putInt("max", mService.getDuration());
         editor.apply();
     }
 
@@ -270,18 +271,16 @@ public class MainActivity extends AppCompatActivity implements IMusicaListener {
 
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
 
-        PREFERENCE_NIGHT_MODE = preferences.getBoolean("sequence-preference", false);
-        PREFERENCE_REPEAT_MODE = preferences.getBoolean("repeat-preference", false);
-        PREFERENCE_SEQUENCE_MODE = preferences.getBoolean("mode-preference", true);
-
-        if (PREFERENCE_NIGHT_MODE) {
+        if (preferences.getBoolean("mode-preference", true)) {
             constraintLayout.setBackgroundColor(getResources().getColor(R.color.colorPrimaryDark));
             toolbar.setBackgroundColor(getResources().getColor(R.color.colorPrimaryDark));
+        }
 
-        } else {
+        if (!preferences.getBoolean("mode-preference", false)) {
             constraintLayout.setBackgroundColor(getResources().getColor(R.color.colorPrimaryLight));
             toolbar.setBackgroundColor(getResources().getColor(R.color.colorPrimaryLight));
         }
+
     }
 
     /**
@@ -341,6 +340,24 @@ public class MainActivity extends AppCompatActivity implements IMusicaListener {
             MusicaService.MusicaBinder binder = (MusicaService.MusicaBinder) service;
             mService = binder.getService();
             enlazado = true;
+
+            SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(MainActivity.this);
+
+            if (preferences.getBoolean("resume-preference", false)) {
+
+                if (!isPlaying) {
+                    btnPlayPause.setImageResource(R.drawable.pausa);
+                    mService.start(preferences.getInt("music-position", 0));
+                    mService.seekToPosition(preferences.getInt("position", 0));
+                    isPlaying = true;
+                }
+
+                tvTitulo.setText(preferences.getString("music-title", ""));
+                ivCaratula.setImageResource(preferences.getInt("music-cover", 0));
+                seekBar.setMax(preferences.getInt("max", 0));
+                seekBar.setProgress(preferences.getInt("position", 0));
+
+            }
         }
 
         @Override
