@@ -195,6 +195,10 @@ public class MusicaService extends Service  implements MediaPlayer.OnCompletionL
         return mediaPlayer.getCurrentPosition();
     }
 
+    public int getMusicPosition() {
+        return puntero;
+    }
+
     @Nullable
     @Override
     public IBinder onBind(Intent intent) {
